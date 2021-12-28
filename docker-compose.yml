@@ -1,0 +1,45 @@
+version: '3.3'
+
+services:
+  api:
+    build: .
+    container_name: jotter_image
+    command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - '8000:8000'
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+      - redis
+    environment:
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/0
+  db:
+    image: 'postgres:12'
+    hostname: postgres
+    volumes:
+      - ./tmp/db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - '5432:5432'
+  redis:
+    image: redis:alpine
+    container_name: jotter_redis
+  celery:
+    build: .
+    command: celery work --app=PROJECT --loglevel=info
+    volumes:
+      - .:/app
+    depends_on:
+      - web
+      - redis
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    restart: always
+    ports:
+      - 1025:1025
+      - 8025:8025
