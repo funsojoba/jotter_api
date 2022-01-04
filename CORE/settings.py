@@ -48,6 +48,8 @@ INSTALLED_APPS = [
     
     #local apps
     'jotter_api',
+    'authentication',
+    'notification'
 ]
 
 MIDDLEWARE = [
